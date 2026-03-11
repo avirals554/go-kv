@@ -6,8 +6,10 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 )
 
+var mu sync.Mutex
 var store = make(map[string]string)
 var db, err = os.OpenFile("val.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 
@@ -17,8 +19,9 @@ func load_from_disk() {
 		line := scanner.Text()
 		command := strings.Split(line, " ")
 		if command[0] == "SET" {
+			mu.Lock()
 			store[command[1]] = command[2]
-
+			mu.Unlock()
 		}
 	}
 }
@@ -35,7 +38,9 @@ func makeconnection(conn net.Conn) {
 		}
 		message := strings.Split(string(buf[:n]), " ")
 		if message[0] == "GET" {
+			mu.Lock()
 			value, ok := store[message[1]]
+			mu.Unlock()
 			if !ok {
 				fmt.Println("couldnt find ")
 				break
@@ -43,7 +48,9 @@ func makeconnection(conn net.Conn) {
 			conn.Write([]byte(value))
 		}
 		if message[0] == "SET" {
+			mu.Lock()
 			store[message[1]] = message[2]
+			mu.Unlock()
 			saving_message := strings.Join(message, " ")
 
 			db.Write([]byte(saving_message + "\n"))
