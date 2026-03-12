@@ -25,7 +25,7 @@ func load_from_disk() {
 		}
 	}
 }
-func makeconnection(conn net.Conn) {
+func makeconnection(conn net.Conn, conn_backup net.Conn) {
 	fmt.Println("we are getting a connection from  ", conn.RemoteAddr())
 	conn.Write([]byte("tcp connection has started ......."))
 
@@ -54,18 +54,33 @@ func makeconnection(conn net.Conn) {
 			saving_message := strings.Join(message, " ")
 
 			db.Write([]byte(saving_message + "\n"))
-
+			if conn_backup != nil {
+				conn_backup.Write([]byte(saving_message + "\n"))
+			}
 		}
 	}
 
 }
 func main() {
+	if len(os.Args) < 3 {
+		fmt.Println("usage: go-kv <port> <Leader|Follower>")
+		return
+	}
+	port := os.Args[1]
 
 	load_from_disk()
-	listen, err := net.Listen("tcp", ":5379")
+	listen, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		fmt.Println("didnt find any connection sorry ")
 		return
+	}
+	var conn_backup net.Conn
+	if os.Args[2] == "Leader" {
+		conn_backup, err = net.Dial("tcp", "localhost:5380")
+		if err != nil {
+			fmt.Println("there was a problem connecting to the backup ")
+			conn_backup = nil
+		}
 	}
 	for {
 		conn, err := listen.Accept()
@@ -73,6 +88,6 @@ func main() {
 			fmt.Println("couldnt connect sorry ")
 			return
 		}
-		go makeconnection(conn)
+		go makeconnection(conn, conn_backup)
 	}
 }
