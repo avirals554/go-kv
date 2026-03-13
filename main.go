@@ -36,7 +36,7 @@ func makeconnection(conn net.Conn, conn_backup net.Conn) {
 			fmt.Println("something went went wrong conn.read()")
 			break
 		}
-		message := strings.Split(string(buf[:n]), " ")
+		message := strings.Split(strings.TrimSpace(string(buf[:n])), " ")
 		if message[0] == "GET" {
 			mu.Lock()
 			value, ok := store[message[1]]
@@ -48,6 +48,7 @@ func makeconnection(conn net.Conn, conn_backup net.Conn) {
 			conn.Write([]byte(value))
 		}
 		if message[0] == "SET" {
+			fmt.Println("storing:", message[1], "=", message[2])
 			mu.Lock()
 			store[message[1]] = message[2]
 			mu.Unlock()
