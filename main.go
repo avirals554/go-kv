@@ -25,6 +25,19 @@ func load_from_disk() {
 		}
 	}
 }
+func GET(store map[string]string, key string) string {
+	value, ok := store[key]
+	if !ok {
+		fmt.Println("there was an error in the get function ")
+	}
+
+	return value
+
+}
+func SET(store map[string]string, key string, value string) {
+	store[key] = value
+
+}
 func makeconnection(conn net.Conn, conn_backup net.Conn) {
 	fmt.Println("we are getting a connection from  ", conn.RemoteAddr())
 	conn.Write([]byte("tcp connection has started ......."))
@@ -39,20 +52,16 @@ func makeconnection(conn net.Conn, conn_backup net.Conn) {
 		message := strings.Split(strings.TrimSpace(string(buf[:n])), " ")
 		if message[0] == "GET" {
 			mu.Lock()
-			value, ok := store[message[1]]
+			value := GET(store, message[1])
 			mu.Unlock()
-			if !ok {
-				fmt.Println("couldnt find ")
-				break
-			}
 			conn.Write([]byte(value))
 		}
 		if message[0] == "SET" {
-			fmt.Println("storing:", message[1], "=", message[2])
+
 			mu.Lock()
-			store[message[1]] = message[2]
+			SET(store, message[1], message[2])
 			mu.Unlock()
-			saving_message := strings.Join(message, " ")
+			saving_message := strings.Join(message, " ") // this is for combining the sliced strings
 
 			db.Write([]byte(saving_message + "\n"))
 			if conn_backup != nil {
