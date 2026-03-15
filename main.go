@@ -34,7 +34,7 @@ func GET(store map[string]string, key string) string {
 	return value
 
 }
-func SET(store map[string]string key string, value string) {
+func SET(store map[string]string, key string, value string) {
 	store[key] = value
 
 }
