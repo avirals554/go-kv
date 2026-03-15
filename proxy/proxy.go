@@ -28,7 +28,7 @@ func main() {
 	for {
 		clientconn, err := listen_client.Accept()
 		if err != nil {
-			fmt.Println("there is something wrong with the client connection ")
+			fmt.Println("there is something wrong with the client conn ")
 			return
 		}
 		load_port()
