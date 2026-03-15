@@ -28,7 +28,7 @@ func main() {
 	for {
 		clientconn, err := listen_client.Accept()
 		if err != nil {
-			fmt.Println("there is something wrong with the client conn ")
+			fmt.Println("there is something wrong with the client connection ")
 			return
 		}
 		load_port()
@@ -37,9 +37,7 @@ func main() {
 			fmt.Println("something is wrong  with the connection to the leader ")
 			return
 		}
-		if err == nil {
-			fmt.Println("i am trying to connect to the leader ")
-		}
+
 		go io.Copy(clientconn, leaderconn) // server → client
 		go io.Copy(leaderconn, clientconn) // client → server
 	}
